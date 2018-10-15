@@ -1,3 +1,5 @@
+import * as React from 'react';
+import * as ReactDom from 'react-dom';
 import { override } from "@microsoft/decorators";
 import { Log } from "@microsoft/sp-core-library";
 import {
@@ -6,6 +8,8 @@ import {
     PlaceholderName
 } from "@microsoft/sp-application-base";
 import { escape } from '@microsoft/sp-lodash-subset';
+
+import TopMenu, { TopMenuProps } from './components/TopMenu';
 
 import * as strings from "TopMenuApplicationCustomizerStrings";
 
@@ -66,14 +70,14 @@ export default class TopMenuApplicationCustomizer extends BaseApplicationCustomi
                 }
 
                 if (this._topPlaceholder.domElement) {
-                    this._topPlaceholder.domElement.innerHTML = `
-                        <div class="">
-                            <div class="">
-                                <i class="ms-Icon ms-Icon--Info" aria-hidden="true"></i> ${escape(
-                                    termSetId
-                                )}
-                            </div>
-                        </div>`;
+                    const element: React.ReactElement<TopMenuProps> = React.createElement(
+                        TopMenu,
+                        {
+                            termSetId: this.properties.TermSetId
+                        }
+                    );
+
+                    ReactDom.render(element, this._topPlaceholder.domElement);
                 }
             }
         }

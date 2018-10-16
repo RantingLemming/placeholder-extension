@@ -1,5 +1,5 @@
-import * as React from 'react';
-import * as ReactDom from 'react-dom';
+import * as React from "react";
+import * as ReactDom from "react-dom";
 import { override } from "@microsoft/decorators";
 import { Log } from "@microsoft/sp-core-library";
 import {
@@ -7,9 +7,10 @@ import {
     PlaceholderContent,
     PlaceholderName
 } from "@microsoft/sp-application-base";
-import { escape } from '@microsoft/sp-lodash-subset';
+import { escape } from "@microsoft/sp-lodash-subset";
+import { sp } from "@pnp/sp";
 
-import TopMenu, { TopMenuProps } from './components/TopMenu';
+import TopMenu, { ITopMenuProps } from "./components/TopMenu";
 
 import * as strings from "TopMenuApplicationCustomizerStrings";
 
@@ -35,16 +36,22 @@ export default class TopMenuApplicationCustomizer extends BaseApplicationCustomi
     public onInit(): Promise<void> {
         Log.info(LOG_SOURCE, `Initialized ${strings.Title}`);
 
-        // Added to handle possible changes on the existence of placeholders.
-        this.context.placeholderProvider.changedEvent.add(
-            this,
-            this._renderPlaceHolders
-        );
+        return super.onInit().then(_ => {
+            // other init code may be present
 
-        // Call render method for generating the HTML elements.
-        this._renderPlaceHolders();
+            sp.setup({
+                spfxContext: this.context
+            });
 
-        return Promise.resolve();
+            // Added to handle possible changes on the existence of placeholders.
+            this.context.placeholderProvider.changedEvent.add(
+                this,
+                this._renderPlaceHolders
+            );
+
+            // Call render method for generating the HTML elements.
+            this._renderPlaceHolders();
+        });
     }
 
     private _renderPlaceHolders(): void {
@@ -70,12 +77,11 @@ export default class TopMenuApplicationCustomizer extends BaseApplicationCustomi
                 }
 
                 if (this._topPlaceholder.domElement) {
-                    const element: React.ReactElement<TopMenuProps> = React.createElement(
-                        TopMenu,
-                        {
-                            termSetId: this.properties.TermSetId
-                        }
-                    );
+                    const element: React.ReactElement<
+                        ITopMenuProps
+                    > = React.createElement(TopMenu, {
+                        termSetId: this.properties.TermSetId
+                    });
 
                     ReactDom.render(element, this._topPlaceholder.domElement);
                 }
